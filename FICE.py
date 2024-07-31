@@ -32,12 +32,13 @@ def main():
             f"Lengths do not match: feature_names({len(feature_name)}) vs importances({len(importances)})")
     importance_df = pd.DataFrame({'feature': feature_name, 'importance': importances})
     importance_df = importance_df.sort_values(by='importance', ascending=False)
-    print("Feature Importance Ranking:", importance_df)
+    # print("Feature Importance Ranking:", importance_df)
 
     X2E = X_test
+    '''
     y2E = blackbox.predict(X2E)
     y2E = np.asarray([dataset['possible_outcomes'][i] for i in y2E])
-
+    '''
     idx_record2explain = 0
 
     explanation, infos = newexplain_plus.newexplain_plus(idx_record2explain, X2E, dataset, blackbox, importance_df,
@@ -63,7 +64,8 @@ def main():
     class_count = get_class_counts(matching_data)
     for class_value, count in class_count.items():
         print(f"category:{class_value}, The number of occurrences:{count}")
-    print("The accuracy of this method in simulating the prediction results of the black box model (random forest):", (class_count[cc_outcome] / sum(class_count.values())))
+    print("The accuracy of this method in simulating the prediction results of the black box model (random forest):",
+          (class_count[cc_outcome] / sum(class_count.values())))
 
 
 if __name__ == "__main__":

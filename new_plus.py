@@ -19,13 +19,17 @@ from util import label_decode
 class RuleBasedClassifier:
     def __init__(self, rules, feature_names, default_prediction=None):
         self.rules = self._parse_rules(rules)
+        '''
         print("The rules for the current classifier object recognition:")
         for rule in self.rules:
             print(rule)
+        '''
         self.rules = self._merge_age_and_age_cat()
+        '''
         print("The new rule after the current classifier object merges the age and age_cat columns:")
         for rule in self.rules:
             print(rule)
+        '''
         self.feature_names = feature_names
         self.default_prediction = default_prediction
 
@@ -36,9 +40,9 @@ class RuleBasedClassifier:
                 merged_rules.append(rule)
                 continue
             age_conditions = [cond for cond in rule if cond[0] == 'age']
-            print("Currently obtained age_conditions:", age_conditions)
+            # print("Currently obtained age_conditions:", age_conditions)
             age_cat_conditions = [cond for cond in rule if cond[0] == 'age_cat']
-            print("Currently obtained age_cat_conditions:", age_cat_conditions)
+            # print("Currently obtained age_cat_conditions:", age_cat_conditions)
             if age_conditions and age_cat_conditions:
                 # Combine age and age_cat conditions
                 age_operator, age_value = age_conditions[0][1], age_conditions[0][2]
@@ -122,21 +126,21 @@ class RuleBasedClassifier:
     def _parse_rules(self, rules):
         parsed_rules = []
         for rule in rules:
-            print("The rules currently recognized by _parse_rules are:", rule)
+            # print("The rules currently recognized by _parse_rules are:", rule)
 
             # Split the rule into conditions and prediction
             conditions_part, prediction_part = rule.split(' => ')
-            print("Currently identified conditions and predicted results:", conditions_part, prediction_part)
+            # print("Currently identified conditions and predicted results:", conditions_part, prediction_part)
             prediction = prediction_part.split('(')[0].strip()
 
             # Split conditions by ' AND '
             conditions = conditions_part.split(' AND ')
-            print("All conditions currently recognized:", conditions)
+            # print("All conditions currently recognized:", conditions)
             parsed_rule = []
 
             # Parse each condition
             for condition in conditions:
-                print("Features currently being processed:", condition)
+                # print("Features currently being processed:", condition)
                 if '<=' in condition:
                     feature, value = condition.split('<=')
                     operator = '<='
@@ -175,7 +179,7 @@ class RuleBasedClassifier:
                 feature = feature.strip()
                 operator = operator.strip()
                 value = value.strip() if value is not None else value
-                print("Current features:", feature, "Current operator：", operator, "Current value：", value)
+                # print("Current features:", feature, "Current operator：", operator, "Current value：", value)
                 feature_exists = False
                 for i, (parsed_feature, parsed_operator, parsed_value) in enumerate(parsed_rule):
                     if parsed_feature == feature:
@@ -260,7 +264,7 @@ class RuleBasedClassifier:
         predictions = []
         matched_rules = []
         for sample in samples:
-            print("Current sample：", sample)
+            # print("Current sample：", sample)
             matched = False
             for rule in self.rules:
                 if self._satisfies_rule(sample, rule):
@@ -509,26 +513,28 @@ def fit(df, class_name, columns, features_type, discrete, continuous,
 
 def generate_rules(df, class_name, columns, datasets, discrete, continuous, label_encoder, path, sep, log):
     X = df.drop(class_name, axis=1)
-    y = df[class_name]
-    features_name = datasets['columns']
+    # y = df[class_name]
+    # features_name = datasets['columns']
     features_type = datasets['features_type']
 
     for col in discrete:
         if col != class_name:
             le = label_encoder[col]
             X[col] = le.fit_transform(X[col])
-
+    '''
     if class_name in discrete:
         le = label_encoder[col]
         y = le.fit_transform(y)
-
+    '''
     dt, dt_dot = pyyadt.fit(df, class_name, columns, features_type, discrete, continuous,
                             filename=datasets['name'], path=path, sep=sep, log=log)
 
     rules = extract_rules_from_dot(dt_dot)
+    '''
     print("All rules extracted:")
     for rule in rules:
         print(rule)
+    '''
     return rules
 
 
@@ -537,7 +543,7 @@ def extract_rules_from_dot(graph):
 
     def recurse(node, path):
         node_label = node.get('label').strip('"').replace("\\n", "")
-        print(f"Processing node: {node.get_name()}, label: {node_label}")  # Debug information
+        # print(f"Processing node: {node.get_name()}, label: {node_label}")  # Debug information
 
         if "High" in node_label or "Medium-Low" in node_label:
             rule = " AND ".join(path) + " => " + node_label
@@ -551,11 +557,11 @@ def extract_rules_from_dot(graph):
 
     root = graph.get_node('n0')[0]
     recurse(root, [])
-
+    '''
     print("Final rules:")  # Debug information
     for rule in rules:
         print(rule)
-
+    '''
     return rules
 
 
@@ -573,6 +579,7 @@ def get_rules_as_graph(dt):
 
 def get_edge_labels(dt):
     return {edge: label.replace('"', '').replace('\\n', '') for edge, label in dt.edges(data='label')}
+
 
 def get_node_labels(dt):
     return {node: label.replace('"', '').replace('\\n', '') for node, label in dt.nodes(data='label')}
@@ -609,7 +616,7 @@ def get_rule(node_path, class_name, diff_outcome, node_labels, edge_labels):
 
 
 def calculate_diff(matched_rule, rule2, x, importance_df):
-    print("The rule that is calculating the difference with x:", rule2)
+    # print("The rule that is calculating the difference with x:", rule2)
 
     def parse_value(value):
         """Parse value to handle tuples or individual values uniformly."""
@@ -718,11 +725,11 @@ def calculate_diff(matched_rule, rule2, x, importance_df):
     for feature in common_feature_names:
         importance = importance_df.loc[importance_df['feature'] == feature, 'importance'].values[0]
         common_features.append((feature, importance))
-    print("Common features and feature importance:", common_features)
+    # print("Common features and feature importance:", common_features)
     total_importance = sum(importance for _, importance in common_features)
 
     normalized_common_features = [(feature, importance / total_importance) for feature, importance in common_features]
-    print("Common features and feature importance after normalization:", normalized_common_features)
+    # print("Common features and feature importance after normalization:", normalized_common_features)
 
     diff_features = []
 
@@ -731,7 +738,7 @@ def calculate_diff(matched_rule, rule2, x, importance_df):
             if feature1.strip() == feature2.strip():
                 if feature1.strip() == 'priors_count':
                     x_priors_count = x[4]
-                    print("The priors_count value of x:", x_priors_count)
+                    # print("The priors_count value of x:", x_priors_count)
                     if x_priors_count is not None:
                         x_priors_count = parse_value(x_priors_count)
                         parsed_value2 = parse_value(value2)
@@ -741,7 +748,7 @@ def calculate_diff(matched_rule, rule2, x, importance_df):
                             diff_features.append((feature1.strip(), importance))
                 elif feature1.strip() == 'age':
                     x_age = x[0]
-                    print("The age value of x:", x_age)
+                    # print("The age value of x:", x_age)
                     if x_age is not None:
                         x_age = parse_value(x_age)
                         parsed_value2 = parse_value(value2)
@@ -756,7 +763,7 @@ def calculate_diff(matched_rule, rule2, x, importance_df):
                         importance = next(
                             importance for feat, importance in normalized_common_features if feat == feature1.strip())
                         diff_features.append((feature1.strip(), importance))
-    print("Different features and feature importance:", diff_features)
+    # print("Different features and feature importance:", diff_features)
     return diff_features, normalized_common_features
 
 
@@ -764,14 +771,15 @@ def get_counterfactuals(dt, matched_rule, diff_outcome, x, importance_df, class_
                         features_type):
     counterfactuals = []
     for rule in dt.rules:
-        print("The current rule is:", rule)
+        # print("The current rule is:", rule)
         if rule[-1] != diff_outcome:
             continue
         diff_features, common_features = calculate_diff(matched_rule, rule, x, importance_df)
         counterfactuals.append((rule, diff_features, common_features))
     print("Here are all the counterfactual rules found:")
     for idx, (rule, diff_features, common_features) in enumerate(counterfactuals, start=1):
-        print(f"Counterfactual Rules{idx}：{rule},Differentiating features:{diff_features},Common feature:{common_features}")
+        print(
+            f"Counterfactual Rules{idx}：{rule},Differentiating features:{diff_features},Common feature:{common_features}")
     return counterfactuals
 
 

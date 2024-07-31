@@ -31,26 +31,29 @@ def newexplain_plus(idx_record2explain, X2E, dataset, blackbox, importance_df,
     dfZ, Z = ng_function(dfZ, x, blackbox, dataset)
     rules = generate_rules(dfZ, class_name, columns, dataset, discrete, continuous, label_encoder, path=path, sep=sep,
                            log=log)
+    '''
     print("rules:", rules)
     print("List of column names for training dt:", columns_tmp)
     print("List of column names for x:", dfZ.columns[1:])
     print("X data points:", x)
+    '''
     dt = RuleBasedClassifier(rules, feature_names=columns_tmp)
 
     # Apply Black Box and Decision Tree on instance to explain
     cc_outcome, matched_rule = dt.predict([x])
-    print("The prediction result of this method for x is:", cc_outcome)
-    print("Rules matched by this method:", matched_rule)
+    # print("The prediction result of this method for x is:", cc_outcome)
+    # print("Rules matched by this method:", matched_rule)
     bb_outcome = blackbox.predict(x.reshape(1, -1))
-    print("The black box model predicts x:", dataset['label_encoder'][dataset['class_name']].classes_[bb_outcome])
+    # print("The black box model predicts x:", dataset['label_encoder'][dataset['class_name']].classes_[bb_outcome])
     # Apply Black Box and Decision Tree on neighborhood
     y_pred_bb = blackbox.predict(Z)
     leaf_nodes = None
 
     # Extract Coutnerfactuals
     diff_outcome = get_diff_outcome(cc_outcome, possible_outcomes)
-    print("The categories to which counterfactuals should belong:", diff_outcome)
-    counterfactuals = get_counterfactuals(dt, matched_rule, diff_outcome, x, importance_df, class_name, continuous, features_type)
+    # print("The categories to which counterfactuals should belong:", diff_outcome)
+    counterfactuals = get_counterfactuals(dt, matched_rule, diff_outcome, x, importance_df, class_name, continuous,
+                                          features_type)
     best_counterfactual = get_best_counterfactual(counterfactuals)
     explanation = (
         matched_rule, best_counterfactual, cc_outcome,
